@@ -21,7 +21,7 @@ with open("run_logs.log", "a+") as log:
 	
 	#Connect to imgur
 	try:
-		imgur = pyimgur.Imgur(Secrets.IMGUR_CLIENT_ID, Secrets.IMGUR_CLIENT_SECRET)
+		imgur = pyimgur.Imgur(Secrets.IMGUR_CLIENT_ID, Secrets.IMGUR_CLIENT_SECRET, Secrets.IMGUR_ACCESS_TOKEN, Secrets.IMGUR_REFRESH_TOKEN)
 		authorization_url = imgur.authorization_url('pin')
 	except Exception:
 		log.write("Exception occurred while initializing Imgur API.")
@@ -42,19 +42,24 @@ with open("run_logs.log", "a+") as log:
 	
 	#Obtain subreddit
 	subreddit = reddit.subreddit("test")
-
-	for submission in subreddit.new(limit=200):
-		if not os.path.isfile("tti_posts_replied_to.txt"):
+	
+	if not os.path.isfile("tti_posts_replied_to.txt"):
 				posts_replied_to = []
-		else:
-			with open("tti_posts_replied_to.txt", "r") as f:
-					posts_replied_to = f.read()
-					posts_replied_to = posts_replied_to.split("\n")
-					posts_replied_to = list(filter(None, posts_replied_to))
-			if submission.id in posts_replied_to:
-				continue
-			time.sleep(10)
-			
+	else:
+		with open("tti_posts_replied_to.txt", "r") as f:
+			posts_replied_to = f.read()
+			posts_replied_to = posts_replied_to.split("\n")
+			posts_replied_to = list(filter(None, posts_replied_to))
+
+	for submission in subreddit.new(limit=100):
+		
+		print("Analyzing submission with id:" + submission.id)
+		
+		if submission.id in posts_replied_to:
+			continue
+		
+		time.sleep(10)
+		
 		if submission.domain == "twitter.com":
 			url = submission.url
 			page = requests.get(url)
@@ -62,7 +67,7 @@ with open("run_logs.log", "a+") as log:
 			tweet = soup.find('p', {'class': 'tweet-text'}).text
 
 			soup_filter = str(soup.findAll('div', {'class': 'AdaptiveMedia-photoContainer'}))
-			print("soup_filter: " + soup_filter)
+			#print("soup_filter: " + soup_filter)
 			image_url = re.findall('src=\"(.*?)\"', soup_filter)
 			if image_url == []:
 				continue
@@ -88,28 +93,33 @@ with open("run_logs.log", "a+") as log:
 					uploaded_image = imgur.upload_image(url = image, title = "test")
 					list_of_images.append(uploaded_image)
 					images_id = images_id + " " + uploaded_image.id
-				print(list_of_images)
+				#print(list_of_images)
 				ImgurAlbum = imgur.create_album(title = "TwitterToImgurBot_Album", description = tweet, images = list_of_images)
 				album_id = ImgurAlbum.id
 				final_url = "https://imgur.com/a/" + ImgurAlbum.id
-			print(final_url)
+			#print(final_url)
 			
 			### POST TO REDDIT ###
 			try:
 				submission.reply('%s \n\n[Image Contained in Tweet](%s)\n***\n ^(You can leave feedback by replying to me)' % (tweet, final_url))
 				posts_replied_to.append(submission.id)
-			except Exception:
-				log.write("Error commenting on post: " + submission.id + ". \n")
-				continue;
+			except Exception as e:
+				log.write("Error commenting on post: " + submission.id + ". \nError occurred: '" + e.message + "'\n")
+				break
+			
+			print("Writing log:" + submission.id)
 				
 			log.write("PostID: " + submission.id +"\n")
 			log.write("ImageId(s): " + images_id + "\n")
 			log.write("AlbumId: " + album_id + "\n")
 			log.write("--------------------------------------------------\n")
-	
-			
-	with open("tti_posts_replied_to.txt", "w") as f:
-				for post_id in posts_replied_to:
-					f.write(post_id + "\n")
+		
+		else:
+			continue
 	
 	log.write("===============================================================================\n")
+
+with open("tti_posts_replied_to.txt", "w") as f:
+	for post_id in posts_replied_to:
+		print("Writing post:" + post_id)
+		f.write(post_id + "\n")
