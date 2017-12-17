@@ -1,2 +1,10 @@
 # Secrets File
 Secrets.py
+
+# Log file
+run_logs.log
+
+# Text file to track posts replied to
+tti_posts_replied_to.txt
+
+
