@@ -1,9 +1,0 @@
-#Imgur API credentials
-IMGUR_CLIENT_ID = '6f82ccf3ec02331'
-IMGUR_CLIENT_SECRET = '5e5c0b7b823496c41d7fe3d69b0e88867aebce07'
-
-#Reddit API credentials
-REDDIT_CLIENT_ID = 'fGD4RL-jeToRPA'
-REDDIT_CLIENT_SECRET = 'rYfai4g4AKczwCSR8rO79XAYSkY'
-REDDIT_USERNAME = '-TwitterToImgurBot-'
-REDDIT_PWD = '2edgy4me'
