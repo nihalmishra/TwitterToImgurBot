@@ -81,7 +81,7 @@ with open("run_logs.log", "a+") as log:
 				
 				image_url = image_url[0]
 				### UPLOAD IMAGE TO IMGUR, RETRIEVE URL ###
-				ImgurImage = imgur.upload_image(url = image_url, title = "test")
+				ImgurImage = imgur.upload_image(url = image_url, title = submission.title)
 				final_url = ImgurImage.link
 				images_id = ImgurImage.id
 				
@@ -90,7 +90,7 @@ with open("run_logs.log", "a+") as log:
 	
 				list_of_images = []
 				for image in image_url:
-					uploaded_image = imgur.upload_image(url = image, title = "test")
+					uploaded_image = imgur.upload_image(url = image, title = submission.title)
 					list_of_images.append(uploaded_image)
 					images_id = images_id + " " + uploaded_image.id
 				#print(list_of_images)
@@ -101,7 +101,7 @@ with open("run_logs.log", "a+") as log:
 			
 			### POST TO REDDIT ###
 			try:
-				submission.reply('%s \n\n[Image Contained in Tweet](%s)\n***\n ^(You can leave feedback by replying to me)' % (tweet, final_url))
+				submission.reply('%s \n\n[Image Contained in Tweet](%s)\n***\n I am a bot beep boop.^(You can leave feedback by replying to me)' % (tweet, final_url))
 				posts_replied_to.append(submission.id)
 			except Exception as e:
 				log.write("Error commenting on post: " + submission.id + ". \nError occurred: '" + e.message + "'\n")
